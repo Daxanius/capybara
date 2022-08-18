@@ -4,10 +4,7 @@
     Simulates the CPU by executing gameboy instructions
 */
 
-use std::panic::PanicInfo;
-
-use super::instructions::{Instruction, instruction_by_opcode, AddrMode};
-use crate::core::instructions::Reg;
+use super::instruction::{Instruction, AddressingMode, Register};
 use super::board::Board;
 
 // Simple CPU registers
@@ -48,11 +45,16 @@ impl CPU {
         print!("Initialising CPU\n");
 
         let in_nop;
-        match instruction_by_opcode(&0) {
+        match Instruction::from_opcode(&0) {
             Some(instruction) => in_nop = instruction,
             None => panic!("Instruction not found!"),
         }
 
+        // Initialise with empty registers
+        // IRL these values would be somewhat 
+        // random at start, because technical stuff.
+        // Maybe that would be interesting to implement
+        // artificially?
         let regs = Registers { 
             a: 0, 
             b: 0, 
@@ -72,6 +74,7 @@ impl CPU {
             pc: 0x100 
         };
 
+        // Create and return the CPU
         CPU { 
             regs: regs, 
             fetched_data: 0, 
@@ -84,13 +87,13 @@ impl CPU {
         }
     }
 
+    /// Fetch the next instruction and increment the program counter
     pub fn fetch_instruction(&mut self, board: &Board) {
-        // Fetch the next instruction and increment the program counter
         self.cur_opcode = board.bus_read(&self.regs.pc);
         self.regs.pc += 1;
 
         // Fetch the instruction at the opcode
-        match instruction_by_opcode(&self.cur_opcode) {
+        match Instruction::from_opcode(&self.cur_opcode) {
             Some(instruction) => self.cur_inst = instruction,
             None => panic!("Instruction not found for opcode '0x{:01X}'!", self.cur_opcode),
         }
@@ -105,23 +108,25 @@ impl CPU {
 
         match &self.cur_inst.addr_mode {
             // Nothing needs to be read for IMP (implied)
-            AddrMode::IMP => return,
+            AddressingMode::IMP => return,
 
             // Address mode Register
-            AddrMode::R => {
+            AddressingMode::R => {
                 match &self.cur_inst.reg1 {
                     Some(x) => read_reg(&x),
                     None => panic!("No register present!"),
                 }
             }
 
-            AddrMode::R_D8 => {
+            // 8 bit from rom
+            AddressingMode::R_D8 => {
                 board.bus_read(&self.regs.pc);
                 emu_cycles(1);
                 self.regs.pc += 1;
             }
 
-            AddrMode::D16 => {
+            // 16 bit from rom
+            AddressingMode::D16 => {
                 // Making a 16 bit value by getting a low and a high value and ORing them together with 
                 // hi shifted over by 8
                 let lo: u16 = board.bus_read(&self.regs.pc) as u16;
@@ -131,7 +136,6 @@ impl CPU {
                 emu_cycles(1);
 
                 self.fetched_data = lo | (hi << 8);
-
                 self.regs.pc += 2;
             }
 
@@ -141,6 +145,11 @@ impl CPU {
 
     pub fn execute(&self) {
         print!("Not executing yet...\n");
+
+        // TODO: find a quick and easy way to execute instructions
+        match &self.cur_inst {
+            _ => panic!()
+        }
     }
     
     pub fn step(&mut self, board: &Board) -> bool {
@@ -158,6 +167,6 @@ pub fn emu_cycles(n: u8) {
         
 }
 
-pub fn read_reg(n: &Reg) {
+pub fn read_reg(n: &Register) {
         
 }

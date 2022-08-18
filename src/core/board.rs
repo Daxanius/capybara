@@ -4,18 +4,11 @@
     Runs the main part of the emulator 
 */
 
-use super::cart::Cartridge;
+use super::cartridge::Cartridge;
 use super::cpu::CPU;
 use super::common;
-use super::cart;
+use super::cartridge;
 use super::ppu;
-
-// Global context variable
-// static mut ctx: Context = Context {
-//     paused: false,
-//     running: false,
-//     ticks: 0,
-// };
 
 /*
     BUS ADDR TABLE
@@ -46,7 +39,7 @@ pub struct Board {
     pub ticks: u64,
 
     // Components
-    pub cart: Option<cart::Cartridge>,
+    pub cart: Option<cartridge::Cartridge>,
 }
 
 impl Board {

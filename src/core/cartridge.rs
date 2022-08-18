@@ -6,7 +6,7 @@
 */
 
 use std::fs::File;
-use std::io::{prelude::*};
+use std::io::prelude::*;
 use std::path::Path;
 
 use super::common;
@@ -37,7 +37,7 @@ pub struct Cartridge {
     pub header: RomHeader,
 }
 
-impl  Cartridge {
+impl Cartridge {
     pub fn cart_lic_name(&self) -> &'static str {
         if self.header.new_lic_code <= 0xA4 {
             return lic_code(&self.header.lic_code);

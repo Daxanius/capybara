@@ -11,8 +11,13 @@ pub fn proc_none(cpu: CPU) {
     panic!("Invalid instruction!");
 }
 
+pub fn proc_ld(cpu: CPU) {
+    // TODO...
+}
+
 // These are function pointers that point
 // to a coresponding function for the instruction
-pub static processors: [fn(CPU);1] = [
+pub static PROCESSORS: [fn(CPU);2] = [
     proc_none,
+    proc_ld,
 ];
