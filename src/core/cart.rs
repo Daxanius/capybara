@@ -31,7 +31,7 @@ pub struct RomHeader {
 }
 
 pub struct Cartridge {
-    pub filename: &'static str,
+    pub filename: String,
     pub rom_size: u64,
     rom_data: Vec<u8>,
     pub header: RomHeader,
@@ -67,7 +67,7 @@ impl  Cartridge {
     }
 
     // Loads a cartridge from a ROM file
-    pub fn load_rom(file: &'static str) -> Cartridge {
+    pub fn load_rom(file: &String) -> Cartridge {
         // Create path to the ROM
         let path = Path::new(file);
         let display = path.display();
@@ -105,7 +105,7 @@ impl  Cartridge {
 
         // Return the cartridge
         return Cartridge {
-            filename: file,
+            filename: file.clone(),
             rom_size: filestream.metadata().unwrap().len(), // TODO: replace this by filestream.stream_len() when this feature releases
             rom_data: data,
             header: head,

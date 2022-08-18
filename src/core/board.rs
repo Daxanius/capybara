@@ -65,7 +65,7 @@ impl Board {
         unimplemented!();
     }
 
-    pub fn insert_cart(&mut self, rom_file: &'static str) {
+    pub fn insert_cart(&mut self, rom_file: &String) {
         self.cart = Some(Cartridge::load_rom(rom_file));
 
         match &self.cart {
