@@ -36,6 +36,7 @@ pub fn instruction_by_opcode(opcode: &u8) -> Option<Instruction> {
 // (n also being described by the addressing mode)
 // This to handle opcodes which require different types
 // or amounts (bytes) of input for each instruction
+// Fun fact: this is a gameboy specific thing :-)
 #[derive(Debug)]
 pub enum AddrMode {
     IMP,

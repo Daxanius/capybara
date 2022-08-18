@@ -109,6 +109,7 @@ impl Board {
             None => panic!("Failed to boot emulator: no cartridge or ROM inserted!\n")
         }
 
+        // Initialise a CPU
         let mut cpu = CPU::init();
 
         while self.running {

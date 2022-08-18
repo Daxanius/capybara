@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "remu"
+name = "capybara"
 version = "0.1.0"

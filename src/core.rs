@@ -5,3 +5,4 @@ pub mod ppu;
 pub mod board;
 pub mod common;
 pub mod instructions;
+pub mod cpu_proc;
