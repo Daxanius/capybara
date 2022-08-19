@@ -23,14 +23,26 @@ fn main() {
     let args = CapybaraArgs::parse();
     let file = args.file;
 
-    let mut ctx = core::board::Board { running: false, paused: false, ticks: 0, cart: None };
+    // Cartridge should not be mutable, as it is ROM
+    let cartridge = core::cartridge::Cartridge::from_file(&file);
 
-    ctx.insert_cart(&file);
-    ctx.start();
+    let mut board = core::board::Board { paused: false, ticks: 0, cart: None };
+    let mut cpu = core::cpu::CPU::init();
+
+    board.insert_cart(cartridge);
 
     // Capybara will use piston for rendering.
+    // TODO: make a context which does basically the same thing as this
     let mut window: PistonWindow = WindowSettings::new("Capybara", [640, 480]).exit_on_esc(true).build().unwrap();
     while let Some(event) = window.next() {
+        // Stepping trough the CPU cycles
+        // We give the cpu the board context
+        // on which it can execute instructions
+        if !cpu.step(&mut board) {
+            print!("CPU halted\n");
+            return;
+        }
+
         window.draw_2d(&event, |c, g, device| {
             clear([1.0; 4], g);
             rectangle(

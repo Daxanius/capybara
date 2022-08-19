@@ -172,12 +172,21 @@ impl CPU {
         }
     }
     
-    pub fn step(&mut self, board: &Board) -> bool {
-        if !self.halted {
-            self.fetch_instruction(board);
-            self.fetch_data(board);
-            self.execute();
+    pub fn step(&mut self, board: &mut Board) -> bool {
+        // This could and should probably be moved to main
+        if board.paused {
+            util::wait!(10);
+            return true;
         }
+
+        if self.halted {
+            return false;
+        }
+
+        self.fetch_instruction(board);
+        self.fetch_data(board);
+        self.execute();
+        board.ticks += 1;
 
         return true;
     }

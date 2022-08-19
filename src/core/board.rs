@@ -34,7 +34,6 @@ use super::ppu;
 // I feel like I'm just applying an OOP style of programming to this x.x
 pub struct Board {
     // Metadata
-    pub running: bool,
     pub paused: bool,
     pub ticks: u64,
 
@@ -58,8 +57,8 @@ impl Board {
         unimplemented!();
     }
 
-    pub fn insert_cart(&mut self, rom_file: &String) {
-        self.cart = Some(Cartridge::load_rom(rom_file));
+    pub fn insert_cart(&mut self, cartridge: Cartridge) {
+        self.cart = Some(cartridge);
 
         match &self.cart {
             Some(cart) => {
@@ -86,38 +85,6 @@ impl Board {
             }
 
             None => println!("Failed to load cartrigde"),
-        }
-    }
-
-    pub fn start(&mut self) {
-        print!("Booting virtual system...\n");
-
-        self.running = true;
-        self.paused = false;
-        self.ticks = 0;
-
-        print!("Checking cartridge...\n");
-        match &self.cart {
-            Some(cart) => print!("Cartridge '{}' found in system\n", cart.header.title),
-            None => panic!("Failed to boot emulator: no cartridge or ROM inserted!\n")
-        }
-
-        // Initialise a CPU
-        let mut cpu = CPU::init();
-
-        while self.running {
-            if self.paused {
-                util::wait!(10);
-                continue;
-            }
-
-            // If the CPU step fails we will notify the user
-            if !cpu.step(self) {
-                print!("CPU halted\n");
-                return;
-            }
-
-            self.ticks += 1;
         }
     }
 }

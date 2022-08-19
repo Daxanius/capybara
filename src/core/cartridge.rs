@@ -67,7 +67,7 @@ impl Cartridge {
     }
 
     // Loads a cartridge from a ROM file
-    pub fn load_rom(file: &String) -> Cartridge {
+    pub fn from_file(file: &String) -> Cartridge {
         // Create path to the ROM
         let path = Path::new(file);
         let display = path.display();
