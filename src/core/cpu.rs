@@ -254,7 +254,7 @@ impl CPU {
 
 /// Emulate clock cycles
 pub fn emu_cycles(n: u8) {
-        
+    unimplemented!()
 }
 
 // Big code block, what a pain
