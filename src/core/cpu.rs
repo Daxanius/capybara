@@ -4,9 +4,7 @@
     Simulates the CPU by executing gameboy instructions
 */
 
-use std::ops::Add;
-
-use super::instruction::{Instruction, AddressingMode, Register, InstructionType, Condition};
+use super::instruction::*;
 use super::board::Board;
 use super::util;
 
@@ -114,14 +112,47 @@ impl CPU {
         }
     }
 
-    /// Read from a register
-    pub fn read_reg(&self, n: &Register) -> u16 {
-        unimplemented!();
+    // Read from a register
+    // TODO: fix these pointer references
+    pub fn read_reg(&self, register: &Register) -> u16 {
+        match register {
+            Register::A => self.regs.a as u16,
+            Register::F => self.regs.f as u16,
+            Register::B => self.regs.b as u16,
+            Register::C => self.regs.c as u16,
+            Register::D => self.regs.d as u16,
+            Register::E => self.regs.e as u16,
+            Register::H => self.regs.h as u16,
+            Register::L => self.regs.l as u16,
+
+            // These are supposed to be pointers...
+            Register::AF => util::reverse!(self.regs.a) as u16,
+            Register::BC => util::reverse!(self.regs.b) as u16,
+            Register::DE => util::reverse!(self.regs.d) as u16,
+            Register::HL => util::reverse!(self.regs.h) as u16,
+
+            Register::PC => self.regs.pc as u16,
+            Register::SP => self.regs.sp as u16,
+
+            _ => 0
+        }
     }
 
     // Set a value of a register
-    pub fn set_reg(&self, register: &Register, value: u16) {
-        unimplemented!();
+    // Why do we take the extra step to do this?
+    pub fn set_reg(&mut self, register: &Register, value: &u16) {
+        match register {
+            Register::A => self.regs.a = (value & 0xFF) as u8,
+            Register::F => self.regs.f = (value & 0xFF) as u8,
+            Register::B => self.regs.b = (value & 0xFF) as u8,
+            Register::C => self.regs.c = (value & 0xFF) as u8,
+            Register::D => self.regs.d = (value & 0xFF) as u8,
+            Register::E => self.regs.e = (value & 0xFF) as u8,
+            Register::H => self.regs.h = (value & 0xFF) as u8,
+            Register::L => self.regs.l = (value & 0xFF) as u8,
+
+            _ => ()
+        }
     }
 
     /// Returns true if the current instruction condition passes
@@ -227,6 +258,7 @@ pub fn emu_cycles(n: u8) {
 }
 
 // Big code block, what a pain
+// TODO: find a way to implement this more elegantly
 impl CPU {
     // Reading data according to the addressing mode
     // telling us how we need to read the next n bytes
@@ -327,7 +359,7 @@ impl CPU {
                 }
 
                 emu_cycles(1);
-                self.set_reg(&Register::HL, self.read_reg(&Register::HL) +1)
+                self.set_reg(&Register::HL, &(self.read_reg(&Register::HL) +1));
             }
 
             AddressingMode::R_HLD => {
@@ -337,7 +369,7 @@ impl CPU {
                 }
 
                 emu_cycles(1);
-                self.set_reg(&Register::HL, self.read_reg(&Register::HL) -1)
+                self.set_reg(&Register::HL, &(self.read_reg(&Register::HL) -1));
             }
 
             AddressingMode::HLI_R => {
@@ -353,7 +385,7 @@ impl CPU {
 
                 self.dest_is_mem = true;
 
-                self.set_reg(&Register::HL, self.read_reg(&Register::HL) +1);
+                self.set_reg(&Register::HL, &(self.read_reg(&Register::HL) +1));
             }
 
             AddressingMode::HLD_R => {
@@ -369,7 +401,7 @@ impl CPU {
 
                 self.dest_is_mem = true;
 
-                self.set_reg(&Register::HL, self.read_reg(&Register::HL) -1);
+                self.set_reg(&Register::HL, &(self.read_reg(&Register::HL) -1));
             }
 
             AddressingMode::A8_R => {

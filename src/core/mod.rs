@@ -44,12 +44,20 @@ pub mod util {
         };
     }
 
+    /// Reverse the bytes of a piece of data
+    macro_rules! reverse {
+        ($n:expr) => {
+            ((($n as usize) & 0xFF00) >> 8) | ((($n as usize) & 0x00FF) << 8)
+        };
+    }
+
     // This is a trick applied to make macros available to other
     // modules
     pub(crate) use {
         bit,
         bit_set,
         wait,
+        reverse,
     };
 
     // Functions
