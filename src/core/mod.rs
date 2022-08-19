@@ -25,6 +25,18 @@ pub mod util {
         };
     }
 
+    /// Set a bit at x to a value, requires mutability
+    macro_rules! bit_set {
+        ($a:expr, $n:expr, $on:expr) => {
+            if ($on) {
+                $a = $a & (1 << $n);
+                return;
+            }
+
+            $a = $a & !(1 << $n);
+        };
+    }
+
     /// Wait n milliseconds before continueing thread execution
     macro_rules! wait {
         ($ms:expr) => {
@@ -36,6 +48,7 @@ pub mod util {
     // modules
     pub(crate) use {
         bit,
+        bit_set,
         wait,
     };
 

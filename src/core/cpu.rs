@@ -167,15 +167,42 @@ impl CPU {
                 }
             }
         }
-    } 
+    }
+
+    // Like zoinks Scoob! What is this implementation?
+    pub fn set_flags(&mut self, z: i8, n: i8, h: i8, c: i8) {
+        if z != -1 {
+            util::bit_set!(self.regs.f, 7, z!=0);
+        }
+
+        if n != -1 {
+            util::bit_set!(self.regs.f, 6, n!=0);
+        }
+
+        if h != -1 {
+            util::bit_set!(self.regs.f, 5, h!=0);
+        }
+
+        if c != -1 {
+            util::bit_set!(self.regs.c, 4, c!=0);
+        }
+    }
 
     pub fn execute(&mut self) {
-        print!("Not executing yet...\n");
+        // Note to self: the program counter here does not contain
+        // the location of the current instruction, as it has already incremented past the instruction
+        // and it's data, thus, this just displays the current position of the program counter
+        // after fetching the instruction
+        print!("Executing instruction: {:?}   PC: {:04x}\n", self.cur_inst.instruction_type, self.regs.pc);
 
         match &self.cur_inst.instruction_type {
             InstructionType::NONE => {
                 panic!("Invalid instruction!");
             },
+
+            InstructionType::NOP => {
+                
+            }
 
             InstructionType::LD => {
 
@@ -188,7 +215,12 @@ impl CPU {
                 }
             },
 
-            _ => panic!("Invalid instruction: {:?}!", &self.cur_inst),
+            InstructionType::XOR => {
+                self.regs.a = self.regs.a ^ (self.fetched_data as u8 & 0xFF);
+                self.set_flags((self.regs.a == 0) as i8, 0, 0, 0);
+            },
+
+            _ => panic!("Instruction not implemented: {:?}!", &self.cur_inst),
         }
     }
     

@@ -28,6 +28,7 @@ impl Instruction {
             0x0E => Some(Instruction { instruction_type: InstructionType::LD, addr_mode: AddressingMode::R_D8, reg1: Some(Register::C), reg2: None, condition: None, param: None}),
             0xAF => Some(Instruction { instruction_type: InstructionType::XOR, addr_mode: AddressingMode::R, reg1: Some(Register::A), reg2: None, condition: None, param: None}),
             0xC3 => Some(Instruction { instruction_type: InstructionType::JP, addr_mode: AddressingMode::D16, reg1: None, reg2: None, condition: None, param: None }),
+            0xF3 => Some(Instruction { instruction_type: InstructionType::DI, addr_mode: AddressingMode::IMP, reg1: None, reg2: None, condition: None, param: None}),
             _ => None
         }
     }
