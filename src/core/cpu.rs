@@ -6,6 +6,7 @@
 
 use super::instruction::{Instruction, AddressingMode, Register};
 use super::board::Board;
+use super::util;
 
 // Simple CPU registers
 pub struct Registers {
@@ -87,11 +88,19 @@ impl CPU {
         }
     }
 
+    pub fn flag_z(&self) -> bool {
+        util::bit!(self.regs.f, 7)
+    }
+
+    pub fn flag_c(&self) -> bool {
+        util::bit!(self.regs.f, 4)
+    }
+
     /// Fetch the next instruction and increment the program counter
     pub fn fetch_instruction(&mut self, board: &Board) {
         self.cur_opcode = board.bus_read(&self.regs.pc);
         self.regs.pc += 1;
-
+        
         // Fetch the instruction at the opcode
         match Instruction::from_opcode(&self.cur_opcode) {
             Some(instruction) => self.cur_inst = instruction,
@@ -147,6 +156,7 @@ impl CPU {
         print!("Not executing yet...\n");
 
         // TODO: find a quick and easy way to execute instructions
+        // Option: hashmap
         match &self.cur_inst {
             _ => panic!()
         }

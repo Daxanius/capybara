@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-use super::common;
+use super::util;
 
 // See https://gbdev.io/pandocs/The_Cartridge_Header.html for more information
 // Not all header fields have been implemented (yet)
@@ -88,10 +88,10 @@ impl Cartridge {
         // Manual casting was required...
         // See https://gbdev.io/pandocs/The_Cartridge_Header.html for more information
         let head = RomHeader {
-            entry: common::unslice_4(&data[0x100..0x104]),
-            logo: common::unslice_48(&data[0x104..0x134]), // Yep, it's the legendary Nintendo logo
-            title: common::bytes_to_title(common::unslice_16(&data[0x134..0x144])),
-            new_lic_code: common::as_u16_be(&common::unslice_2(&data[0x144..0x146])),
+            entry: util::unslice_4(&data[0x100..0x104]),
+            logo: util::unslice_48(&data[0x104..0x134]), // Yep, it's the legendary Nintendo logo
+            title: util::bytes_to_title(util::unslice_16(&data[0x134..0x144])),
+            new_lic_code: util::as_u16_be(&util::unslice_2(&data[0x144..0x146])),
             sgb_flag: data[0x146],
             cart_type: data[0x147],
             rom_size: 32 << data[0x148],
@@ -100,7 +100,7 @@ impl Cartridge {
             lic_code: data[0x14B],
             version: data[0x14C],
             checksum: data[0x14D],
-            global_checksum: common::as_u16_be(&common::unslice_2(&data[0x14E..0x150])),
+            global_checksum: util::as_u16_be(&util::unslice_2(&data[0x14E..0x150])),
         };
 
         // Return the cartridge

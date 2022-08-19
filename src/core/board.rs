@@ -4,9 +4,9 @@
     Runs the main part of the emulator 
 */
 
+use super::util;
 use super::cartridge::Cartridge;
 use super::cpu::CPU;
-use super::common;
 use super::cartridge;
 use super::ppu;
 
@@ -107,7 +107,7 @@ impl Board {
 
         while self.running {
             if self.paused {
-                common::delay(10);
+                util::wait!(10);
                 continue;
             }
 

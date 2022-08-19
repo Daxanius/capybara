@@ -7,6 +7,7 @@
 */
 
 use clap::Parser;
+use piston_window::*;
 
 mod core;
 
@@ -26,4 +27,18 @@ fn main() {
 
     ctx.insert_cart(&file);
     ctx.start();
+
+    // Capybara will use piston for rendering.
+    let mut window: PistonWindow = WindowSettings::new("Capybara", [640, 480]).exit_on_esc(true).build().unwrap();
+    while let Some(event) = window.next() {
+        window.draw_2d(&event, |c, g, device| {
+            clear([1.0; 4], g);
+            rectangle(
+                [1.0, 0.0, 0.0, 1.0], // red
+                        [0.0, 0.0, 10.0, 10.0],
+                        c.transform,    
+                        g
+            );
+        });
+    }
 }
