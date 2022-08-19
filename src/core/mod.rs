@@ -13,7 +13,6 @@ pub mod timer;
 pub mod ppu;
 pub mod board;
 pub mod instruction;
-pub mod cpu_proc;
 
 pub mod util {
     use std::fmt::Write;
@@ -37,7 +36,7 @@ pub mod util {
     // modules
     pub(crate) use {
         bit,
-        wait
+        wait,
     };
 
     // Functions

@@ -5,6 +5,7 @@
     information on the instruction set
 */
 
+#[derive(Debug)]
 pub struct Instruction {
     pub instruction_type: InstructionType,
     pub addr_mode: AddressingMode,

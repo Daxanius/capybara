@@ -4,7 +4,7 @@
     Simulates the CPU by executing gameboy instructions
 */
 
-use super::instruction::{Instruction, AddressingMode, Register};
+use super::instruction::{Instruction, AddressingMode, Register, InstructionType};
 use super::board::Board;
 use super::util;
 
@@ -155,10 +155,20 @@ impl CPU {
     pub fn execute(&self) {
         print!("Not executing yet...\n");
 
-        // TODO: find a quick and easy way to execute instructions
-        // Option: hashmap
-        match &self.cur_inst {
-            _ => panic!()
+        match &self.cur_inst.instruction_type {
+            InstructionType::NONE => {
+                panic!("Invalid instruction!");
+            },
+
+            InstructionType::LD => {
+
+            },
+
+            InstructionType::JP => {
+
+            },
+
+            _ => panic!("Invalid instruction: {:?}!", &self.cur_inst),
         }
     }
     

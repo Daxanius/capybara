@@ -107,6 +107,7 @@ name = "capybara"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "common_macros",
  "piston_window",
 ]
 
@@ -228,6 +229,12 @@ name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
+
+[[package]]
+name = "common_macros"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3f6d59c71e7dc3af60f0af9db32364d96a16e9310f3f5db2b55ed642162dd35"
 
 [[package]]
 name = "core-foundation"
