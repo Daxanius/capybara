@@ -4,6 +4,8 @@
     Simulates the CPU by executing gameboy instructions
 */
 
+use std::ops::Add;
+
 use super::instruction::{Instruction, AddressingMode, Register, InstructionType, Condition};
 use super::board::Board;
 use super::util;
@@ -37,6 +39,9 @@ pub struct CPU {
 
     halted: bool,
     stepping: bool,
+
+    // Are interrupts enabled?
+    int_enaled: bool,
 }
 
 impl CPU {
@@ -57,7 +62,7 @@ impl CPU {
         // Maybe that would be interesting to implement
         // artificially?
         let regs = Registers { 
-            a: 0, 
+            a: 0x01, 
             b: 0, 
             c: 0, 
             d: 0,
@@ -85,6 +90,7 @@ impl CPU {
             cur_inst: in_nop, 
             halted: false, 
             stepping: true,
+            int_enaled: true,
         }
     }
 
@@ -97,7 +103,7 @@ impl CPU {
     }
 
     /// Fetch the next instruction and increment the program counter
-    pub fn fetch_instruction(&mut self, board: &Board) {
+    fn fetch_instruction(&mut self, board: &Board) {
         self.cur_opcode = board.bus_read(&self.regs.pc);
         self.regs.pc += 1;
         
@@ -108,48 +114,14 @@ impl CPU {
         }
     }
 
-    // Reading data according to the addressing mode
-    // telling us how we need to read the next n bytes
-    // see ./instructions.rs for more information
-    pub fn fetch_data(&mut self, board: &Board) {
-        self.mem_dest = 0;
-        self.dest_is_mem = false;
+    /// Read from a register
+    pub fn read_reg(&self, n: &Register) -> u16 {
+        unimplemented!();
+    }
 
-        match &self.cur_inst.addr_mode {
-            // Nothing needs to be read for IMP (implied)
-            AddressingMode::IMP => return,
-
-            // Address mode Register
-            AddressingMode::R => {
-                match &self.cur_inst.reg1 {
-                    Some(x) => read_reg(&x),
-                    None => panic!("No register present!"),
-                }
-            }
-
-            // 8 bit from rom
-            AddressingMode::R_D8 => {
-                board.bus_read(&self.regs.pc);
-                emu_cycles(1);
-                self.regs.pc += 1;
-            }
-
-            // 16 bit from rom
-            AddressingMode::D16 => {
-                // Making a 16 bit value by getting a low and a high value and ORing them together with 
-                // hi shifted over by 8
-                let lo: u16 = board.bus_read(&self.regs.pc) as u16;
-                emu_cycles(1); 
-
-                let hi: u16 = board.bus_read(&(self.regs.pc +1)) as u16;
-                emu_cycles(1);
-
-                self.fetched_data = lo | (hi << 8);
-                self.regs.pc += 2;
-            }
-
-            mode => panic!("Unknown addressing mode '({:?})'!", mode),
-        }
+    // Set a value of a register
+    pub fn set_reg(&self, register: &Register, value: u16) {
+        unimplemented!();
     }
 
     /// Returns true if the current instruction condition passes
@@ -188,7 +160,7 @@ impl CPU {
         }
     }
 
-    pub fn execute(&mut self) {
+    fn execute(&mut self) {
         // Note to self: the program counter here does not contain
         // the location of the current instruction, as it has already incremented past the instruction
         // and it's data, thus, this just displays the current position of the program counter
@@ -206,6 +178,11 @@ impl CPU {
 
             InstructionType::LD => {
 
+            },
+
+            InstructionType::DI => {
+                // Very difficult, no?
+                self.int_enaled = false;
             },
 
             InstructionType::JP => {
@@ -249,7 +226,258 @@ pub fn emu_cycles(n: u8) {
         
 }
 
-/// Read from a register
-pub fn read_reg(n: &Register) {
-        
+// Big code block, what a pain
+impl CPU {
+    // Reading data according to the addressing mode
+    // telling us how we need to read the next n bytes
+    // see ./instructions.rs for more information
+    fn fetch_data(&mut self, board: &Board) {
+        self.mem_dest = 0;
+        self.dest_is_mem = false;
+
+        match &self.cur_inst.addr_mode {
+            // Nothing needs to be read for IMP (implied)
+            AddressingMode::IMP => return,
+
+            // Address mode Register
+            AddressingMode::R => {
+                match &self.cur_inst.reg1 {
+                    Some(x) => self.fetched_data = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+            }
+
+            AddressingMode::R_R => {
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+            }
+
+            // 8 bit from rom
+            AddressingMode::R_D8 => {
+                board.bus_read(&self.regs.pc);
+                emu_cycles(1);
+                self.regs.pc += 1;
+            }
+
+            // 16 bit from rom
+            AddressingMode::D16 => {
+                // Making a 16 bit value by getting a low and a high value and ORing them together with 
+                // hi shifted over by 8
+                let lo: u16 = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1); 
+
+                let hi: u16 = board.bus_read(&(self.regs.pc +1)) as u16;
+                emu_cycles(1);
+
+                self.fetched_data = lo | (hi << 8);
+                self.regs.pc += 2;
+            }
+
+            // The same as D16, might remove later
+            AddressingMode::R_D16 => {
+                let lo: u16 = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1); 
+
+                let hi: u16 = board.bus_read(&(self.regs.pc +1)) as u16;
+                emu_cycles(1);
+
+                self.fetched_data = lo | (hi << 8);
+                self.regs.pc += 2;
+            }
+
+            AddressingMode::MR_R => {
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                match &self.cur_inst.reg1 {
+                    Some(x) => self.mem_dest = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                self.dest_is_mem = true;
+
+                if matches!(self.cur_inst.reg1.as_ref().unwrap(), Register::C) {
+                    self.mem_dest |= 0xFF00;
+                }
+            }
+
+            AddressingMode::R_MR => {
+                let addr: usize;
+                match &self.cur_inst.reg2 {
+                    Some(x) => addr = self.read_reg(&x) as usize,
+                    None => panic!("No register present!"),
+                }
+
+                if matches!(self.cur_inst.reg1.as_ref().unwrap(), Register::C) {
+                    self.mem_dest |= 0xFF00;
+                }
+
+                self.fetched_data = board.bus_read(&addr) as u16;
+                emu_cycles(1);
+            }
+
+            AddressingMode::R_HLI => {
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = board.bus_read(&(self.read_reg(&x) as usize)) as u16,
+                    None => panic!("No register present!"),
+                }
+
+                emu_cycles(1);
+                self.set_reg(&Register::HL, self.read_reg(&Register::HL) +1)
+            }
+
+            AddressingMode::R_HLD => {
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = board.bus_read(&(self.read_reg(&x) as usize)) as u16,
+                    None => panic!("No register present!"),
+                }
+
+                emu_cycles(1);
+                self.set_reg(&Register::HL, self.read_reg(&Register::HL) -1)
+            }
+
+            AddressingMode::HLI_R => {
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                match &self.cur_inst.reg1 {
+                    Some(x) => self.mem_dest = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                self.dest_is_mem = true;
+
+                self.set_reg(&Register::HL, self.read_reg(&Register::HL) +1);
+            }
+
+            AddressingMode::HLD_R => {
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                match &self.cur_inst.reg1 {
+                    Some(x) => self.mem_dest = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                self.dest_is_mem = true;
+
+                self.set_reg(&Register::HL, self.read_reg(&Register::HL) -1);
+            }
+
+            AddressingMode::A8_R => {
+                self.mem_dest = board.bus_read(&self.regs.pc) as u16 | 0xFF00;
+                self.dest_is_mem = true;
+                emu_cycles(1);
+                self.regs.pc += 1;
+            }
+
+            // The latter 3 are practically the same,
+            // perhaps they could be turned into
+            // 1 addressing mode?
+            AddressingMode::R_A8 => {
+                self.fetched_data = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1);
+                self.regs.pc += 1;
+            }
+
+            AddressingMode::HL_SPR => {
+                self.fetched_data = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1);
+                self.regs.pc += 1;
+            }
+
+            AddressingMode::D8 => {
+                self.fetched_data = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1);
+                self.regs.pc += 1;
+            }
+
+            AddressingMode::D16_R => {
+                let lo: u16 = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1); 
+
+                let hi: u16 = board.bus_read(&(self.regs.pc +1)) as u16;
+                emu_cycles(1);
+
+                self.mem_dest = lo | (hi << 8);
+                self.dest_is_mem = true;
+                self.regs.pc += 2;
+
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+            }
+
+            AddressingMode::MR_D8 => {
+                self.fetched_data = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1);
+                self.regs.pc += 1;
+
+                match &self.cur_inst.reg1 {
+                    Some(x) => self.mem_dest = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                self.dest_is_mem = true;
+            }
+
+            AddressingMode::MR => {
+                match &self.cur_inst.reg1 {
+                    Some(x) => self.mem_dest = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+
+                self.dest_is_mem = true;
+
+                match &self.cur_inst.reg1 {
+                    Some(x) => self.fetched_data = board.bus_read(&(self.read_reg(&x) as usize)) as u16,
+                    None => panic!("No register present!"),
+                }
+
+                emu_cycles(1);
+            }
+
+            // Same as D16_R
+            AddressingMode::A16_R => {
+                let lo: u16 = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1); 
+
+                let hi: u16 = board.bus_read(&(self.regs.pc +1)) as u16;
+                emu_cycles(1);
+
+                self.mem_dest = lo | (hi << 8);
+                self.dest_is_mem = true;
+                self.regs.pc += 2;
+
+                match &self.cur_inst.reg2 {
+                    Some(x) => self.fetched_data = self.read_reg(&x),
+                    None => panic!("No register present!"),
+                }
+            }
+
+            AddressingMode::R_A16 => {
+                let lo: u16 = board.bus_read(&self.regs.pc) as u16;
+                emu_cycles(1); 
+
+                let hi: u16 = board.bus_read(&(self.regs.pc +1)) as u16;
+                emu_cycles(1);
+
+                let addr: u16 = lo | (hi << 8);
+                self.regs.pc += 2;
+                self.fetched_data = board.bus_read(&(addr as usize)) as u16;
+                emu_cycles(1);
+            }
+
+            mode => panic!("Unknown addressing mode '({:?})'!", mode),
+        }
+    }
 }

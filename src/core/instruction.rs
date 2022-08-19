@@ -43,33 +43,67 @@ impl Instruction {
 // Fun fact: this is a gameboy specific thing :-)
 #[derive(Debug)]
 pub enum AddressingMode {
-    /// Implied
+    /// No input bytes
     IMP,
+
+    /// A register and a 16 bit number
     R_D16,
+
+    /// The second register
     R_R,
+
+    /// Load a register into a register memory region (MR)
     MR_R,
 
-    /// Register
+    /// A register
     R,
 
-    /// The next 8 bits from ROM
+    /// A register and an 8 bit number
     R_D8,
+
+    /// Read from a register memory region (MR)
     R_MR,
+
+    /// Load address of the HL register and increment
     R_HLI,
+
+    /// Load address of the HL register and decrement
     R_HLD,
+
+    /// Move a value into the HL address and increment it
     HLI_R,
+
+    /// Move a value into the HL address and decrement it
     HLD_R,
+
+    /// Move an A8 into a register
     R_A8,
+
+    /// Move from a register into an A8
     A8_R,
+
+    /// Load stackpointer into HL incremented by R8
     HL_SPR,
 
-    /// The next 16 bits from ROM
+    /// A 16 bit number
     D16,
+
+    /// Move from a register into D8
     D8,
+
+    /// Moving a register into a 16 bit address
     D16_R,
+
+    /// Loading a D8 into a memory address
     MR_D8,
+
+    /// Load reg1 into memory address
     MR,
+
+    /// Move A16 to a register
     A16_R,
+
+    /// Move A16 into a register
     R_A16
 }
 
