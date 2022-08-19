@@ -249,7 +249,6 @@ pub enum Condition {
     /// Equal to zero
     Z,
 
-
     NC, 
     C
 }
