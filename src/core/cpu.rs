@@ -4,7 +4,7 @@
     Simulates the CPU by executing gameboy instructions
 */
 
-use super::instruction::{Instruction, AddressingMode, Register, InstructionType};
+use super::instruction::{Instruction, AddressingMode, Register, InstructionType, Condition};
 use super::board::Board;
 use super::util;
 
@@ -152,7 +152,24 @@ impl CPU {
         }
     }
 
-    pub fn execute(&self) {
+    /// Returns true if the current instruction condition passes
+    pub fn condition(&self) -> bool {
+        match &self.cur_inst.condition {
+            // Perhaps this should panic?
+            None => true,
+            Some (condition) => {
+                match condition {
+                    Condition::NONE => true,
+                    Condition::C => self.flag_c(),
+                    Condition::NC => !self.flag_c(),
+                    Condition::Z => self.flag_z(),
+                    Condition::NZ => !self.flag_z(),
+                }
+            }
+        }
+    } 
+
+    pub fn execute(&mut self) {
         print!("Not executing yet...\n");
 
         match &self.cur_inst.instruction_type {
@@ -165,7 +182,10 @@ impl CPU {
             },
 
             InstructionType::JP => {
-
+                if self.condition() {
+                    self.regs.pc = self.fetched_data as usize;
+                    emu_cycles(1);
+                }
             },
 
             _ => panic!("Invalid instruction: {:?}!", &self.cur_inst),
@@ -192,10 +212,12 @@ impl CPU {
     }
 }
 
+/// Emulate clock cycles
 pub fn emu_cycles(n: u8) {
         
 }
 
+/// Read from a register
 pub fn read_reg(n: &Register) {
         
 }

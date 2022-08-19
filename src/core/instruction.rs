@@ -249,6 +249,9 @@ pub enum Condition {
     /// Equal to zero
     Z,
 
-    NC, 
+    /// Not C flag
+    NC,
+
+    /// C flag
     C
 }
