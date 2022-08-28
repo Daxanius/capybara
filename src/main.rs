@@ -33,11 +33,11 @@ fn main() {
 
     // Capybara will use piston for rendering.
     // TODO: make a context which does basically the same thing as this
-    let mut window: PistonWindow = WindowSettings::new("Capybara", [640, 480]).exit_on_esc(true).build().unwrap();
+    let mut window: PistonWindow = WindowSettings::new("Capybara", [160, 144]).exit_on_esc(true).build().unwrap();
     while let Some(event) = window.next() {
         // Stepping trough the CPU cycles
         // We give the cpu the board context
-        // on which it can execute instructions
+        // from which it can access the bus
         if !cpu.step(&mut board) {
             print!("CPU halted\n");
             return;
@@ -45,11 +45,13 @@ fn main() {
 
         window.draw_2d(&event, |c, g, device| {
             clear([1.0; 4], g);
+
+            // 10x10 pixels in red
             rectangle(
-                [1.0, 0.0, 0.0, 1.0], // red
-                        [0.0, 0.0, 10.0, 10.0],
-                        c.transform,    
-                        g
+              [1.0, 0.0, 0.0, 1.0], // red
+                    [0.0, 0.0, 10.0, 10.0],
+                    c.transform,    
+                    g
             );
         });
     }

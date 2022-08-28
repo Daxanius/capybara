@@ -1,7 +1,10 @@
 /*
     Made by Daxanius
 
-    Simulates the CPU by executing gameboy instructions
+    Simulates the gameboy's 8-bit 8080-like Sharp CPU by stepping trough the instructions
+
+    CPU frequency: 4.194304 MHz
+    ^ This is oddly specific...
 */
 
 use super::instruction::*;
@@ -9,6 +12,7 @@ use super::board::Board;
 use super::util;
 
 // Simple CPU registers
+// Could this be simplified with a hashmap?
 pub struct Registers {
     a: u8,
     b: u8,
@@ -254,7 +258,7 @@ impl CPU {
 
 /// Emulate clock cycles
 pub fn emu_cycles(n: u8) {
-    unimplemented!()
+    // unimplemented!()
 }
 
 // Big code block, what a pain
